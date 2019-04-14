@@ -1,8 +1,8 @@
 # Peer-graded-Assignment-Prediction-Assignment-Writeup
 
 ---
-title: "Module 8"
-author: "MAhmoud"
+title: "PML"
+author: "Mahmoud muhammad kaml"
 output: html_document
 ---
 
@@ -32,17 +32,9 @@ library(rpart.plot)
 
 ```
 
-## Download and loading the Dataset
+## loading the Dataset
 ```{r load data}
 
-# Download the dataset 
-trainUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
-testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
-
-
-# Load the dataset into memory
-trainingData <- read.csv(url(trainUrl), na.strings = c("NA", "#DIV/0!", ""))
-testingData <- read.csv(url(testUrl), na.strings = c("NA", "#DIV/0!", ""))
 
 #
 trainingData <- trainingData[, colSums(is.na(trainingData)) == 0]
@@ -65,14 +57,14 @@ dim(trainingData); dim(testingDataSet)
 
 ```{r feature decision tree}
 
-decisionTreeModel <- rpart(classe ~ ., data = trainingDataSet, method = "class")
-decisionTreePrediction <- predict(decisionTreeModel, testingDataSet, type = "class")
-
-# Plot Decision Tree
-rpart.plot(decisionTreeModel, main = "Decision Tree", under = T, faclen = 0)
-
-# Using confusion matrix to test results
-confusionMatrix(decisionTreePrediction, testingDataSet$classe)
+set.seed(12345)
+tree.fit = train(y = training.set$classe,
+                 x = training.set[,-ncol(training.set)],
+                 method = "rpart")
+# Plot classification tree
+rattle::fancyRpartPlot(
+  tree.fit$finalModel
+)
 
 ```
 
@@ -81,11 +73,13 @@ confusionMatrix(decisionTreePrediction, testingDataSet$classe)
 
 ```{r random forest}
 
-randomForestModel <- randomForest(classe ~. , data = trainingDataSet, method = "class")
-randomForestPrediction <- predict(randomForestModel, testingDataSet, type = "class")
-
-confusionMatrix(randomForestPrediction, testingDataSet$classe)
-
+set.seed(12345)
+rf.fit = randomForest(
+  classe ~ .,
+  data = training.set,
+  ntree = 250)
+# Plot the Random Forests model
+plot(rf.fit)
 ```
 
 
@@ -93,7 +87,11 @@ confusionMatrix(randomForestPrediction, testingDataSet$classe)
 From the result, it show Random Forest accuracy is higher than Decision tree which is 0.9915  > 0.6644. Therefore, we will use random forest to answer the assignment. 
 
 ```{r final prediction}
-predictionFinal <- predict(randomForestModel, testingDataSet, type = "class")
-#predictionFinal
+pred2 = predict(
+  rf.fit,
+  testing.set[,-ncol(testing.set)]
+)
+# Get results (Accuracy, etc.)
+confusionMatrix(pred2, testing.set$classe)
 
 ```
